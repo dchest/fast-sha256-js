@@ -190,6 +190,7 @@
   }
 
   HMAC.prototype.reset = function() {
+    var i;
     this.inner.reset();
     this.outer.reset();
     for (i = 0; i < 64; i++) this.pad[i] ^= 0x36;
@@ -200,7 +201,7 @@
   };
 
   HMAC.prototype.clean = function() {
-    for (i = 0; i < 64; i++) this.pad[i] = 0;
+    for (var i = 0; i < 64; i++) this.pad[i] = 0;
     this.inner.clean();
     this.outer.clean();
   };
