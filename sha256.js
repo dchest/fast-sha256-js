@@ -1,5 +1,22 @@
-sha256 = function(m) {
-  /** @const */ var K = new Uint32Array([
+/*
+ * SHA-256 (+ HMAC and PBKDF2) in JavaScript.
+ * Written in 2014 by Dmitry Chestnykh.
+ * Public domain, no warranty.
+ *
+ * Functions (accept and return Uint8Arrays):
+ *
+ *   sha256(message) -> hash
+ *   sha256.hmac(key, message) -> mac
+ *   sha256.pbkdf2(password, salt, rounds, dkLen) -> dk
+ *
+ */
+(function(root, f) {
+  if (typeof module !== 'undefined' && module.exports) module.exports = f();
+  else root.sha256 = f();
+})(this, function() {
+  'use strict';
+
+  var K = new Uint32Array([
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b,
     0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01,
     0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7,
@@ -15,32 +32,21 @@ sha256 = function(m) {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
   ]);
 
-  var h0 = 0x6a09e667, h1 = 0xbb67ae85, h2 = 0x3c6ef372, h3 = 0xa54ff53a,
-      h4 = 0x510e527f, h5 = 0x9b05688c, h6 = 0x1f83d9ab, h7 = 0x5be0cd19,
-      w = new Uint32Array(64),
-      mlen = m.length,
-      left = mlen % 64,
-      bitsHi = (mlen / 0x20000000) | 0,
-      bitsLo = mlen << 3,
-      padLen = (left < 56) ? 64 : 128,
-      pad = new Uint8Array(padLen),
-      i;
-
-
-  function blocks(p, off, len) {
+  function blocks(v, p, pos, len) {
+    var w = new Uint32Array(64);
     var a, b, c, d, e, f, g, h, u, i, j, t1, t2;
     while (len >= 64) {
-      a = h0;
-      b = h1;
-      c = h2;
-      d = h3;
-      e = h4;
-      f = h5;
-      g = h6;
-      h = h7;
+      a = v[0];
+      b = v[1];
+      c = v[2];
+      d = v[3];
+      e = v[4];
+      f = v[5];
+      g = v[6];
+      h = v[7];
 
       for (i = 0; i < 16; i++) {
-        j = off + i*4;
+        j = pos + i*4;
         w[i] = (((p[j  ] & 0xff) << 24) | ((p[j+1] & 0xff)<<16) |
                 ((p[j+2] & 0xff) <<  8) | ( p[j+3] & 0xff));
       }
@@ -74,63 +80,186 @@ sha256 = function(m) {
         a = (t1 + t2) | 0;
       }
 
-      h0 = (h0 + a) | 0;
-      h1 = (h1 + b) | 0;
-      h2 = (h2 + c) | 0;
-      h3 = (h3 + d) | 0;
-      h4 = (h4 + e) | 0;
-      h5 = (h5 + f) | 0;
-      h6 = (h6 + g) | 0;
-      h7 = (h7 + h) | 0;
+      v[0] = (v[0] + a) | 0;
+      v[1] = (v[1] + b) | 0;
+      v[2] = (v[2] + c) | 0;
+      v[3] = (v[3] + d) | 0;
+      v[4] = (v[4] + e) | 0;
+      v[5] = (v[5] + f) | 0;
+      v[6] = (v[6] + g) | 0;
+      v[7] = (v[7] + h) | 0;
 
-      off += 64;
+      pos += 64;
       len -= 64;
     }
+    for (i = 0; i < w.length; i++) w[i] = 0;
+    return pos;
   }
 
-  /* process blocks */
-  blocks(m, 0, m.length);
-
-  /* finalize */
-  for (i = 0; i < left; i++) pad[i] = m[mlen-left+i];
-  pad[left] = 0x80;
-  for (i = left + 1; i < padLen - 8; i++) pad[i] = 0;
-  pad[padLen-8] = (bitsHi >>> 24) & 0xff;
-  pad[padLen-7] = (bitsHi >>> 16) & 0xff;
-  pad[padLen-6] = (bitsHi >>>  8) & 0xff;
-  pad[padLen-5] = (bitsHi >>>  0) & 0xff;
-  pad[padLen-4] = (bitsLo >>> 24) & 0xff;
-  pad[padLen-3] = (bitsLo >>> 16) & 0xff;
-  pad[padLen-2] = (bitsLo >>>  8) & 0xff;
-  pad[padLen-1] = (bitsLo >>>  0) & 0xff;
-
-  blocks(pad, 0, padLen);
-
-  /* output hash */
-  w[0] = h0;
-  w[1] = h1;
-  w[2] = h2;
-  w[3] = h3;
-  w[4] = h4;
-  w[5] = h5;
-  w[6] = h6;
-  w[7] = h7;
-
-  var hash = new Uint8Array(32);
-  for (i = 0; i < 8; i++) {
-    hash[i*4+0] = w[i]>>>24 & 0xff;
-    hash[i*4+1] = w[i]>>>16 & 0xff;
-    hash[i*4+2] = w[i]>>>8 & 0xff;
-    hash[i*4+3] = w[i] & 0xff;
+  function SHA256() {
+    this.v = new Uint32Array(8);
+    this.buf = new Uint8Array(128);
+    this.len = 0;
+    this.buflen = 0;
+    this.reset();
   }
 
-  /* cleanup */
-  h1 = h2 = h3 = h4 = h5 = h6 = h7 = 0;
-  left = bitsHi = bitsLo = padLeft = 0;
-  for (i = 0; i < pad.length; i++) pad[i] = 0;
-  for (i = 0; i < w.length; i++) w[i] = 0;
+  SHA256.prototype.reset = function() {
+    var i;
+    this.v[0] = 0x6a09e667;
+    this.v[1] = 0xbb67ae85;
+    this.v[2] = 0x3c6ef372;
+    this.v[3] = 0xa54ff53a;
+    this.v[4] = 0x510e527f;
+    this.v[5] = 0x9b05688c;
+    this.v[6] = 0x1f83d9ab;
+    this.v[7] = 0x5be0cd19;
+    this.len = 0;
+    this.buflen = 0;
+    for (i = 0; i < this.buf.length; i++) this.buf[i] = 0;
+  };
 
-  return hash;
-};
+  SHA256.prototype.clean = function() {
+    this.reset();
+  }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = sha256;
+  SHA256.prototype.update = function(m, len) {
+    var mpos = 0, mlen = (typeof len !== 'undefined') ? len : m.length;
+    this.len += mlen;
+    if (this.buflen > 0) {
+      while (this.buflen < 64 && mlen > 0) {
+        this.buf[this.buflen++] = m[mpos++];
+        mlen--;
+      }
+      if (this.buflen === 64) {
+        blocks(this.v, this.buf, 0, 64);
+        this.buflen = 0;
+      }
+    }
+    if (mlen >= 64) {
+      mpos = blocks(this.v, m, mpos, mlen);
+      mlen = mlen % 64;
+    }
+    while (mlen > 0) {
+      this.buf[this.buflen++] = m[mpos++];
+      mlen--;
+    }
+    return this;
+  }
+
+  SHA256.prototype.finish = function(h) {
+    var mlen = this.len,
+        left = this.buflen,
+        bhi = (mlen / 0x20000000) | 0,
+        blo = mlen << 3,
+        padlen = (mlen % 64 < 56) ? 64 : 128,
+        i;
+
+    this.buf[left] = 0x80;
+    for (i = left + 1; i < padlen - 8; i++) this.buf[i] = 0;
+    this.buf[padlen-8] = (bhi >>> 24) & 0xff;
+    this.buf[padlen-7] = (bhi >>> 16) & 0xff;
+    this.buf[padlen-6] = (bhi >>>  8) & 0xff;
+    this.buf[padlen-5] = (bhi >>>  0) & 0xff;
+    this.buf[padlen-4] = (blo >>> 24) & 0xff;
+    this.buf[padlen-3] = (blo >>> 16) & 0xff;
+    this.buf[padlen-2] = (blo >>>  8) & 0xff;
+    this.buf[padlen-1] = (blo >>>  0) & 0xff;
+
+    blocks(this.v, this.buf, 0, padlen);
+
+    for (i = 0; i < 8; i++) {
+      h[i*4+0] = this.v[i]>>>24 & 0xff;
+      h[i*4+1] = this.v[i]>>>16 & 0xff;
+      h[i*4+2] = this.v[i]>>>8 & 0xff;
+      h[i*4+3] = this.v[i] & 0xff;
+    }
+    return this;
+  };
+
+  function HMAC(k) {
+    var i;
+    this.pad = new Uint8Array(64);
+    if (k.length > 64)
+      (new SHA256()).update(k).finish(this.pad);
+    else
+      for (i = 0; i < k.length; i++) this.pad[i] = k[i];
+    this.inner = new SHA256();
+    this.outer = new SHA256();
+    this.reset();
+  };
+
+  HMAC.prototype.reset = function() {
+    this.inner.reset();
+    this.outer.reset();
+    for (i = 0; i < 64; i++) this.pad[i] ^= 0x36;
+    this.inner.update(this.pad);
+    for (i = 0; i < 64; i++) this.pad[i] ^= 0x36 ^ 0x5c;
+    this.outer.update(this.pad);
+    for (i = 0; i < 64; i++) this.pad[i] ^= 0x5c;
+  };
+
+  HMAC.prototype.clean = function() {
+    for (i = 0; i < 64; i++) this.pad[i] = 0;
+    this.inner.clean();
+    this.outer.clean();
+  };
+
+  HMAC.prototype.update = function(m) {
+    this.inner.update(m);
+    return this;
+  }
+
+  HMAC.prototype.finish = function(h) {
+    this.inner.finish(h);
+    this.outer.update(h, 32).finish(h);
+    return this;
+  }
+
+  var sha256 = function(m) {
+    var h = new Uint8Array(32);
+    (new SHA256()).update(m).finish(h).clean();
+    return h;
+  };
+
+  sha256.hmac = function(k, m) {
+    var h = new Uint8Array(32);
+    (new HMAC(k)).update(m).finish(h).clean();
+    return h;
+  };
+
+  sha256.pbkdf2 = function(password, salt, rounds, dkLen) {
+    var i, j, k,
+        ctr = new Uint8Array(4),
+        t = new Uint8Array(32),
+        u = new Uint8Array(32),
+        dk = new Uint8Array(dkLen),
+        prf = new HMAC(password);
+
+    for (i = 0; i * 32 < dkLen; i++) {
+      k = i + 1;
+      ctr[0] = (k >>> 24) & 0xff;
+      ctr[1] = (k >>> 16) & 0xff;
+      ctr[2] = (k >>> 8)  & 0xff;
+      ctr[3] = (k >>> 0)  & 0xff;
+      prf.reset();
+      prf.update(salt);
+      prf.update(ctr);
+      prf.finish(u);
+      for (j = 0; j < 32; j++) t[j] = u[j];
+      for (j = 2; j <= rounds; j++) {
+        prf.reset()
+        prf.update(u);
+        prf.finish(u);
+        for (k = 0; k < 32; k++) t[k] ^= u[k];
+      }
+      for (j = 0; j < 32 && i*32 + j < dkLen; j++) dk[i*32 + j] = t[j];
+    }
+    for (i = 0; i < 32; i++) t[i] = u[i] = 0;
+    for (i = 0; i < 4; i++) ctr[i] = 0;
+    prf.clean();
+    return dk;
+  };
+
+  return sha256;
+});
