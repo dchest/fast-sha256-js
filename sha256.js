@@ -138,7 +138,7 @@
     }
     if (mlen >= 64) {
       mpos = blocks(this.v, m, mpos, mlen);
-      mlen = mlen % 64;
+      mlen %= 64;
     }
     while (mlen > 0) {
       this.buf[this.buflen++] = m[mpos++];
