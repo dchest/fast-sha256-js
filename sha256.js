@@ -121,7 +121,7 @@
 
   SHA256.prototype.clean = function() {
     this.reset();
-  }
+  };
 
   SHA256.prototype.update = function(m, len) {
     var mpos = 0, mlen = (typeof len !== 'undefined') ? len : m.length;
@@ -145,7 +145,7 @@
       mlen--;
     }
     return this;
-  }
+  };
 
   SHA256.prototype.finish = function(h) {
     var mlen = this.len,
@@ -187,7 +187,7 @@
     this.inner = new SHA256();
     this.outer = new SHA256();
     this.reset();
-  };
+  }
 
   HMAC.prototype.reset = function() {
     this.inner.reset();
@@ -208,13 +208,13 @@
   HMAC.prototype.update = function(m) {
     this.inner.update(m);
     return this;
-  }
+  };
 
   HMAC.prototype.finish = function(h) {
     this.inner.finish(h);
     this.outer.update(h, 32).finish(h);
     return this;
-  }
+  };
 
   var sha256 = function(m) {
     var h = new Uint8Array(32);
@@ -248,7 +248,7 @@
       prf.finish(u);
       for (j = 0; j < 32; j++) t[j] = u[j];
       for (j = 2; j <= rounds; j++) {
-        prf.reset()
+        prf.reset();
         prf.update(u);
         prf.finish(u);
         for (k = 0; k < 32; k++) t[k] ^= u[k];
