@@ -1,0 +1,26 @@
+{
+  "name": "sha256-js",
+  "version": "0.0.0",
+  "description": "SHA256",
+  "main": "sha256.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "uglifyjs sha256.js -c -m -o sha256.min.js",
+    "test": "tape test/test.js | faucet"
+  },
+  "keywords": [
+    "hash",
+    "sha256",
+    "cryptography",
+    "crypto",
+    "hmac"
+  ],
+  "author": "Dmitry Chestnykh",
+  "license": "Public domain",
+  "devDependencies": {
+    "faucet": "0.0.1",
+    "tape": "^2.13.3"
+  }
+}
