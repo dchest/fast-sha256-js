@@ -201,7 +201,7 @@
       this.inner.v[i] = this.istate[i];
       this.outer.v[i] = this.ostate[i];
     }
-    this.inner.len = this.inner.len = 64;
+    this.inner.len = this.outer.len = 64;
     this.inner.buflen = this.outer.buflen = 0;
   };
 
