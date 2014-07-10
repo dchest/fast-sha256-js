@@ -194,6 +194,7 @@
       this.istate[i] = this.inner.v[i];
       this.ostate[i] = this.outer.v[i];
     }
+    for (i = 0; i < pad.length; i++) pad[i] = 0;
   }
 
   HMAC.prototype.reset = function() {
