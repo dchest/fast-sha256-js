@@ -19,6 +19,13 @@ function benchmarkOps(fn,  num) {
   log.print(' ' + ((num*1000)/elapsed).toFixed(3), 'ops/s');
 }
 
+function benchmarkTime(fn) {
+  var start = new Date();
+  fn();
+  var elapsed = (new Date()) - start;
+  log.print(' ' + elapsed.toFixed(0), 'ms');
+}
+
 function benchmarkSha256(bytes) {
   log.start('Benchmarking sha256 (' + bytes + ' bytes)');
   var m = new Uint8Array(bytes);
@@ -28,5 +35,17 @@ function benchmarkSha256(bytes) {
   }, bytes);
 }
 
+function benchmarkPBKDF2(rounds) {
+  log.start('Benchmarking sha256.pbkdf2 (' + rounds + ' rounds)');
+  var i, p = new Uint8Array(32), s = new Uint8Array(32);
+  for (i = 0; i < p.length; i++) p[i] = i & 0xff;
+  for (i = 0; i < s.length; i++) s[i] = (i+32) & 0xff;
+  benchmarkTime(function(){
+    sha256.pbkdf2(p, s, rounds, 32);
+  });
+}
+
 benchmarkSha256(8192);
 benchmarkSha256(1024);
+benchmarkPBKDF2(5000);
+benchmarkPBKDF2(10000);
