@@ -177,29 +177,36 @@
   };
 
   function HMAC(k) {
-    var i;
-    this.ipad = new Uint8Array(64);
-    this.opad = new Uint8Array(64);
+    var i, pad = new Uint8Array(64);
     if (k.length > 64)
-      (new SHA256()).update(k).finish(this.ipad);
+      (new SHA256()).update(k).finish(pad);
     else
-      for (i = 0; i < k.length; i++) this.ipad[i] = k[i];
-    for (i = 0; i < 64; i++) this.opad[i] = this.ipad[i] ^ 0x5c;
-    for (i = 0; i < 64; i++) this.ipad[i] ^= 0x36;
+      for (i = 0; i < k.length; i++) pad[i] = k[i];
     this.inner = new SHA256();
     this.outer = new SHA256();
-    this.reset();
+    for (i = 0; i < 64; i++) pad[i] ^= 0x36;
+    this.inner.update(pad);
+    for (i = 0; i < 64; i++) pad[i] ^= 0x36 ^ 0x5c;
+    this.outer.update(pad);
+    this.istate = new Uint32Array(8);
+    this.ostate = new Uint32Array(8);
+    for (i = 0; i < 8; i++) {
+      this.istate[i] = this.inner.v[i];
+      this.ostate[i] = this.outer.v[i];
+    }
   }
 
   HMAC.prototype.reset = function() {
-    this.inner.reset();
-    this.outer.reset();
-    this.inner.update(this.ipad);
-    this.outer.update(this.opad);
+    for (var i = 0; i < 8; i++) {
+      this.inner.v[i] = this.istate[i];
+      this.outer.v[i] = this.ostate[i];
+    }
+    this.inner.len = this.inner.len = 64;
+    this.inner.buflen = this.outer.buflen = 0;
   };
 
   HMAC.prototype.clean = function() {
-    for (var i = 0; i < 64; i++) this.ipad[i] = this.opad[i] = 0;
+    for (var i = 0; i < 8; i++) this.ostate[i] = this.istate[i] = 0;
     this.inner.clean();
     this.outer.clean();
   };
