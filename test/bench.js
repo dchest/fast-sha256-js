@@ -26,12 +26,22 @@ function benchmarkTime(fn) {
   log.print(' ' + elapsed.toFixed(0), 'ms');
 }
 
-function benchmarkSha256(bytes) {
+function benchmarkHash(bytes) {
   log.start('Benchmarking sha256 (' + bytes + ' bytes)');
   var m = new Uint8Array(bytes);
   for (var i = 0; i < m.length; i++) m[i] = i & 0xff;
   benchmark(function(){
     sha256(m);
+  }, bytes);
+}
+
+function benchmarkHMAC(bytes) {
+  log.start('Benchmarking sha256.hmac (' + bytes + ' bytes)');
+  var k = new Uint8Array(32), m = new Uint8Array(bytes);
+  for (var i = 0; i < k.length; i++) k[i] = i & 0xff;
+  for (i = 0; i < m.length; i++) m[i] = (i+32) & 0xff;
+  benchmark(function(){
+    sha256.hmac(k, m);
   }, bytes);
 }
 
@@ -45,7 +55,9 @@ function benchmarkPBKDF2(rounds) {
   });
 }
 
-benchmarkSha256(8192);
-benchmarkSha256(1024);
+benchmarkHash(8192);
+benchmarkHash(1024);
+benchmarkHMAC(1024);
+benchmarkHMAC(64);
 benchmarkPBKDF2(5000);
 benchmarkPBKDF2(10000);
