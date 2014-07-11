@@ -31,7 +31,7 @@ Usage
 
 Functions accept and return `Uint8Array`s.
 To convert strings, use external library (for example,
-[nacl.util](https://github.com/dchest/tweetnacl-js/).
+[nacl.util](https://github.com/dchest/tweetnacl-js/)).
 
 ### sha256(message)
 
