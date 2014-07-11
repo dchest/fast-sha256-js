@@ -6,6 +6,9 @@ browsers and Node.js. Implements the hash function, HMAC, and PBKDF2.
 
 Public domain. No warranty.
 
+[![Build Status](https://travis-ci.org/dchest/fast-sha256-js.svg?branch=master)
+](https://travis-ci.org/dchest/fast-sha256-js)
+
 
 Installation
 ------------
