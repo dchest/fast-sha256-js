@@ -1,13 +1,34 @@
-SHA256-js
-=========
+fast-sha256-js
+==============
 
-SHA-256 implementation in JavaScript.
+SHA-256 implementation in JavaScript with typed arrays that works in modern
+browsers and Node.js. Implements the hash function, HMAC, and PBKDF2.
+
 Public domain. No warranty.
+
+
+Installation
+------------
+
+You can install fast-sha256-js via a package manager:
+
+[Bower](http://bower.io):
+
+    $ bower install fast-sha256
+
+[NPM](https://www.npmjs.org/):
+
+    $ npm install fast-sha256
+
+or [download source code](https://github.com/dchest/fast-sha256-js/releases).
+
 
 Usage
 -----
 
 Functions accept and return `Uint8Array`s.
+To convert strings, use external library (for example,
+[nacl.util](https://github.com/dchest/tweetnacl-js/).
 
 ### sha256(message)
 
