@@ -1,6 +1,6 @@
 {
   "name": "fast-sha256",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "SHA-256, HMAC and PBKDF2 implementation with typed arrays for modern browsers and Node.js",
   "main": "sha256.js",
   "directories": {
@@ -9,6 +9,10 @@
   "scripts": {
     "build": "uglifyjs sha256.js -c -m -o sha256.min.js",
     "test": "tape test/test.js | faucet"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dchest/fast-sha256-js"
   },
   "keywords": [
     "hash",
@@ -21,7 +25,8 @@
   "author": "Dmitry Chestnykh",
   "license": "Public domain",
   "devDependencies": {
-    "faucet": "0.0.1",
-    "tape": "^2.13.3"
+    "faucet": "0.x.x",
+    "tape": "2.x.x",
+    "uglify-js": "2.x.x"
   }
 }
