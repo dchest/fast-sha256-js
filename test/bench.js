@@ -5,7 +5,7 @@ if (!sha256) throw new Error('sha256 is not loaded');
 
 function benchmark(fn, bytes) {
   var start = new Date();
-  var num = 200;
+  var num = 5000;
   for (var i = 0; i < num; i++) fn();
   var elapsed = (new Date()) - start;
   log.print(' ' + ((bytes*num/1024/1024*1000)/elapsed).toFixed(3), 'MB/s');
