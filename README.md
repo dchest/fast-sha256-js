@@ -73,3 +73,12 @@ Run benchmark:
 Build minified version:
 
     $ npm run build
+
+
+
+Notes
+-----
+
+While this implementation is pretty fast compared to previous generation
+implementations, if you need a faster one, check out
+[asmCrypto](https://github.com/vibornoff/asmcrypto.js).
