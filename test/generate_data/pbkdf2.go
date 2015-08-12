@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"code.google.com/p/go.crypto/pbkdf2"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 		if _, err := io.ReadFull(rand.Reader, s[:]); err != nil {
 			panic(err)
 		}
-		c := 128 - i + 2;
+		c := 128 - i + 2
 		dk := pbkdf2.Key(p, s, c, i+8, sha256.New)
 		rs[i][0] = p
 		rs[i][1] = s
