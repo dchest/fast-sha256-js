@@ -94,7 +94,7 @@
   }
 
   function SHA256() {
-    this.v = new Uint32Array(8);
+    this.v = new Int32Array(8);
     this.w = new Int32Array(64);
     this.buf = new Uint8Array(128);
     this.buflen = 0;
