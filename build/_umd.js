@@ -1,7 +1,7 @@
 (function (root, factory) {
     // Hack to make all exports of this module sha256 function object properties.
     var exports = {};
-    factory(require, exports);
+    factory(exports);
     var sha256 = exports["default"];
     for (var k in exports) {
         sha256[k] = exports[k];
@@ -14,4 +14,4 @@
     } else {
         root.sha256 = sha256;
     }
-})(this, function (require, exports) {
+})(this, function(exports) {
