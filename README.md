@@ -49,6 +49,21 @@ Returns a key of length dkLen derived using PBKDF2-HMAC-SHA256
 from the given password, salt, and the number of rounds.
 
 
+There are also classes `Hash` and `HMAC`:
+
+### new sha256.Hash()
+
+Constructor for hash instance. Should be used with `new`.
+Available methods: `update()`, `digest()`, `reset()`, etc. 
+
+### new sha256.HMAC(key)
+
+Constructor for HMAC instance. Should be used with `new`.
+Available methods: `update()`, `digest()`, `reset()`, etc. 
+
+See comments in `src/sha256.ts` for details.
+
+
 Usage with TypeScript
 ---------------------
 
@@ -57,14 +72,20 @@ import sha256, { Hash, HMAC } from "fast-sha256";
 
 sha256(data) // default export is hash
 
-var h = new HMAC(key); // also Hash and HMAC classes
-var mac = h.update(data).digest();
+const h = new HMAC(key); // also Hash and HMAC classes
+const mac = h.update(data).digest();
 
 // alternatively:
 
 import * as sha256 from "fast-sha256";
 
-sha256.pbkdf2(password, salt, iterations, dkLen); // returns derived key 
+sha256.pbkdf2(password, salt, iterations, dkLen); // returns derived key
+sha256.hash(data)
+
+const hasher = new sha256.Hash();
+hasher.update(data1);
+hasher.update(data2);
+const result = hasher.digest();
 ```
 
 
