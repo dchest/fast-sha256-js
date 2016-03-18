@@ -332,6 +332,7 @@ export function hash(data: Uint8Array): Uint8Array {
     return digest;
 }
 
+// Function hash is both available as module.hash and as default export. 
 export default hash;
 
 // Returns HMAC-SHA256 of data under the key.
