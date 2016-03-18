@@ -1,8 +1,9 @@
 fast-sha256-js
 ==============
 
-SHA-256 implementation in JavaScript with typed arrays that works in modern
-browsers and Node.js. Implements the hash function, HMAC, and PBKDF2.
+SHA-256 implementation for JavaScript/TypeScript with typed arrays
+that works in modern browsers and Node.js.
+Implements the hash function, HMAC, and PBKDF2.
 
 Public domain. No warranty.
 
@@ -96,11 +97,15 @@ Install development dependencies:
 
     $ npm install
 
+Build JavaScript, minified version, and typings:
+
+    $ npm run build
+
 Run tests:
 
     $ npm test
 
-Run tests on different source file:
+Run tests on a different source file:
 
     $ SHA256_SRC=sha256.min.js npm test
 
@@ -110,15 +115,14 @@ Run benchmark:
 
 (or in a browser, open `tests/bench.html`).
 
-Build minified version:
+Lint:
 
-    $ npm run build
-
+    $ npm run lint
 
 
 Notes
 -----
 
 While this implementation is pretty fast compared to previous generation
-implementations, if you need a faster one, check out
+implementations, if you need an even faster one, check out
 [asmCrypto](https://github.com/vibornoff/asmcrypto.js).
