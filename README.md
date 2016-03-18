@@ -67,7 +67,7 @@ See comments in `src/sha256.ts` for details.
 Usage with TypeScript
 ---------------------
 
-```
+```typescript
 import sha256, { Hash, HMAC } from "fast-sha256";
 
 sha256(data) // default export is hash
