@@ -24,6 +24,22 @@ test('sha256 random test vectors', function(t) {
   t.end();
 });
 
+test('sha256.Hash API test', function(t) {
+    var vec = hashVectors[10];
+    var h = new sha256.Hash();
+    h.update(dec(vec[0]));
+    var digest = h.digest();
+    t.equal(hex(digest), hex(dec(vec[1])));
+    t.equal(hex(h.digest()), hex(digest));
+    t.throws(function() { h.update(dec(vec[0])); }, Error);
+    h.reset();
+    h.update(dec(vec[0]));
+    t.equal(hex(h.digest()), hex(digest));
+    h.clean();
+    t.notEqual(hex(h.digest()), hex(digest));
+    t.end();
+});
+
 test('sha256.hmac random test vectors', function(t) {
   hmacVectors.forEach(function(vec) {
     var msg = dec(vec[0]);
@@ -33,6 +49,22 @@ test('sha256.hmac random test vectors', function(t) {
     t.equal(hex(mac), hex(goodMac));
   });
   t.end();
+});
+
+test('sha256.HMAC API test', function(t) {
+    var vec = hmacVectors[10];
+    var h = new sha256.HMAC(dec(vec[1]));
+    h.update(dec(vec[0]));
+    var digest = h.digest();
+    t.equal(hex(digest), hex(dec(vec[2])));
+    t.equal(hex(h.digest()), hex(digest));
+    t.throws(function() { h.update(dec(vec[0])); }, Error);
+    h.reset();
+    h.update(dec(vec[0]));
+    t.equal(hex(h.digest()), hex(digest));
+    h.clean();
+    t.notEqual(hex(h.digest()), hex(digest));
+    t.end();
 });
 
 test('sha256.pbkdf2 random test vectors', function(t) {

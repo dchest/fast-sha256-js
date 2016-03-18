@@ -3,12 +3,15 @@
   "version": "0.9.2",
   "description": "SHA-256, HMAC and PBKDF2 implementation with typed arrays for modern browsers and Node.js",
   "main": "sha256.js",
+  "typings": "sha256",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "build": "uglifyjs sha256.js -c -m -o sha256.min.js",
-    "test": "tape test/test.js | faucet"
+    "build": "tsc && echo '});' | cat build/umd-prelude.js build/sha256.js - > sha256.js && rm build/sha256.js && uglifyjs sha256.js -c -m -o sha256.min.js && mv build/sha256.d.ts ./",
+    "test": "tape test/test.js | faucet",
+    "bench": "node test/bench.js",
+    "lint": "tslint src/*.ts"
   },
   "repository": {
     "type": "git",
@@ -27,6 +30,8 @@
   "devDependencies": {
     "faucet": "0.x.x",
     "tape": "2.x.x",
+    "tslint": "^3.6.0",
+    "typescript": "^1.8.9",
     "uglify-js": "2.x.x"
   }
 }

@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "newLine": "LF",
+        "outDir": "./build",
+        "sourceMap": false,
+        "declaration": true
+    },
+    "files": [
+        "src/sha256.ts"
+    ]
+}

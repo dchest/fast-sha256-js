@@ -1,8 +1,9 @@
 fast-sha256-js
 ==============
 
-SHA-256 implementation in JavaScript with typed arrays that works in modern
-browsers and Node.js. Implements the hash function, HMAC, and PBKDF2.
+SHA-256 implementation for JavaScript/TypeScript with typed arrays
+that works in modern browsers and Node.js.
+Implements the hash function, HMAC, and PBKDF2.
 
 Public domain. No warranty.
 
@@ -49,6 +50,46 @@ Returns a key of length dkLen derived using PBKDF2-HMAC-SHA256
 from the given password, salt, and the number of rounds.
 
 
+There are also classes `Hash` and `HMAC`:
+
+### new sha256.Hash()
+
+Constructor for hash instance. Should be used with `new`.
+Available methods: `update()`, `digest()`, `reset()`, etc. 
+
+### new sha256.HMAC(key)
+
+Constructor for HMAC instance. Should be used with `new`.
+Available methods: `update()`, `digest()`, `reset()`, etc. 
+
+See comments in `src/sha256.ts` for details.
+
+
+Usage with TypeScript
+---------------------
+
+```typescript
+import sha256, { Hash, HMAC } from "fast-sha256";
+
+sha256(data) // default export is hash
+
+const h = new HMAC(key); // also Hash and HMAC classes
+const mac = h.update(data).digest();
+
+// alternatively:
+
+import * as sha256 from "fast-sha256";
+
+sha256.pbkdf2(password, salt, iterations, dkLen); // returns derived key
+sha256.hash(data)
+
+const hasher = new sha256.Hash();
+hasher.update(data1);
+hasher.update(data2);
+const result = hasher.digest();
+```
+
+
 Testing and building
 --------------------
 
@@ -56,11 +97,15 @@ Install development dependencies:
 
     $ npm install
 
+Build JavaScript, minified version, and typings:
+
+    $ npm run build
+
 Run tests:
 
     $ npm test
 
-Run tests on different source file:
+Run tests on a different source file:
 
     $ SHA256_SRC=sha256.min.js npm test
 
@@ -70,15 +115,14 @@ Run benchmark:
 
 (or in a browser, open `tests/bench.html`).
 
-Build minified version:
+Lint:
 
-    $ npm run build
-
+    $ npm run lint
 
 
 Notes
 -----
 
 While this implementation is pretty fast compared to previous generation
-implementations, if you need a faster one, check out
+implementations, if you need an even faster one, check out
 [asmCrypto](https://github.com/vibornoff/asmcrypto.js).
