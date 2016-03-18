@@ -210,6 +210,21 @@ var Hash = (function () {
         this.finish(out);
         return out;
     };
+    // Internal function for use in HMAC for optimization.
+    Hash.prototype._saveState = function (out) {
+        for (var i = 0; i < this.state.length; i++) {
+            out[i] = this.state[i];
+        }
+    };
+    // Internal function for use in HMAC for optimization.
+    Hash.prototype._restoreState = function (from, bytesHashed) {
+        for (var i = 0; i < this.state.length; i++) {
+            this.state[i] = from[i];
+        }
+        this.bytesHashed = bytesHashed;
+        this.finished = false;
+        this.bufferLength = 0;
+    };
     Hash.digestLength = 32;
     Hash.blockSize = 64;
     return Hash;
@@ -241,10 +256,8 @@ var HMAC = (function () {
         this.outer.update(pad);
         this.istate = new Uint32Array(this.digestLength / 4);
         this.ostate = new Uint32Array(this.digestLength / 4);
-        for (var i = 0; i < this.istate.length; i++) {
-            this.istate[i] = this.inner.state[i];
-            this.ostate[i] = this.outer.state[i];
-        }
+        this.inner._saveState(this.istate);
+        this.outer._saveState(this.ostate);
         for (var i = 0; i < pad.length; i++) {
             pad[i] = 0;
         }
@@ -253,13 +266,8 @@ var HMAC = (function () {
     // to make it possible to run HMAC over the other data with the same
     // key without creating a new instance.
     HMAC.prototype.reset = function () {
-        for (var i = 0; i < this.istate.length; i++) {
-            this.inner.state[i] = this.istate[i];
-            this.outer.state[i] = this.ostate[i];
-        }
-        this.inner.bytesHashed = this.outer.bytesHashed = this.inner.blockSize;
-        this.inner.bufferLength = this.outer.bufferLength = 0;
-        this.inner.finished = this.outer.finished = false;
+        this.inner._restoreState(this.istate, this.inner.blockSize);
+        this.outer._restoreState(this.ostate, this.outer.blockSize);
         return this;
     };
     // Cleans HMAC state.

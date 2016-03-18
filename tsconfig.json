@@ -6,7 +6,8 @@
         "preserveConstEnums": true,
         "newLine": "LF",
         "outDir": "./build",
-        "sourceMap": false
+        "sourceMap": false,
+        "declaration": false
     },
     "files": [
         "src/sha256.ts"
