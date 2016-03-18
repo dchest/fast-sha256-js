@@ -32,7 +32,7 @@ const K = new Uint32Array([
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 ]);
 
-function hashBlocks(w: Int32Array, v: Int32Array, p: Uint8Array, pos: number, len: number) : number {
+function hashBlocks(w: Int32Array, v: Int32Array, p: Uint8Array, pos: number, len: number): number {
   let a: number, b: number, c: number, d: number, e: number,
       f: number, g: number, h: number, u: number, i: number,
       j: number, t1: number, t2: number;
@@ -47,28 +47,28 @@ function hashBlocks(w: Int32Array, v: Int32Array, p: Uint8Array, pos: number, le
     h = v[7];
 
     for (i = 0; i < 16; i++) {
-      j = pos + i*4;
-      w[i] = (((p[j  ] & 0xff) << 24) | ((p[j+1] & 0xff)<<16) |
-              ((p[j+2] & 0xff) <<  8) | ( p[j+3] & 0xff));
+      j = pos + i * 4;
+      w[i] = (((p[j] & 0xff) << 24) | ((p[j + 1] & 0xff) << 16) |
+              ((p[j + 2] & 0xff) <<  8) | (p[j + 3] & 0xff));
     }
 
     for (i = 16; i < 64; i++) {
-      u = w[i-2];
-      t1 = (u>>>17 | u<<(32-17)) ^ (u>>>19 | u<<(32-19)) ^ (u>>>10);
+      u = w[i - 2];
+      t1 = (u >>> 17 | u << (32 - 17)) ^ (u >>> 19 | u << (32 - 19)) ^ (u >>> 10);
 
-      u = w[i-15];
-      t2 = (u>>>7 | u<<(32-7)) ^ (u>>>18 | u<<(32-18)) ^ (u>>>3);
+      u = w[i - 15];
+      t2 = (u >>> 7 | u << (32 - 7)) ^ (u >>> 18 | u << (32 - 18)) ^ (u >>> 3);
 
-      w[i] = (t1 + w[i-7] | 0) + (t2 + w[i-16] | 0);
+      w[i] = (t1 + w[i - 7] | 0) + (t2 + w[i - 16] | 0);
     }
 
     for (i = 0; i < 64; i++) {
-      t1 = (((((e>>>6 | e<<(32-6)) ^ (e>>>11 | e<<(32-11)) ^
-                (e>>>25 | e<<(32-25))) + ((e & f) ^ (~e & g))) | 0) +
+      t1 = (((((e >>> 6 | e << (32 - 6)) ^ (e >>> 11 | e << (32 - 11)) ^
+                (e >>> 25 | e << (32 - 25))) + ((e & f) ^ (~e & g))) | 0) +
                   ((h + ((K[i] + w[i]) | 0)) | 0)) | 0;
 
-      t2 = (((a>>>2 | a<<(32-2)) ^ (a>>>13 | a<<(32-13)) ^
-            (a>>>22 | a<<(32-22))) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      t2 = (((a >>> 2 | a << (32 - 2)) ^ (a >>> 13 | a << (32 - 13)) ^
+            (a >>> 22 | a << (32 - 22))) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
 
       h = g;
       g = f;
@@ -149,7 +149,7 @@ export class Hash {
     // instance must be reset to use it again.
     update(data: Uint8Array, dataLength: number = data.length): Hash {
         if (this.finished) {
-            throw new Error("SHA256: can't update because hash was finished.")
+            throw new Error("SHA256: can't update because hash was finished.");
         }
         let dataPos = 0;
         this.bytesHashed += dataLength;
@@ -189,14 +189,14 @@ export class Hash {
             for (let i = left + 1; i < padLength - 8; i++) {
                 this.buffer[i] = 0;
             }
-            this.buffer[padLength-8] = (bitLenHi >>> 24) & 0xff;
-            this.buffer[padLength-7] = (bitLenHi >>> 16) & 0xff;
-            this.buffer[padLength-6] = (bitLenHi >>>  8) & 0xff;
-            this.buffer[padLength-5] = (bitLenHi >>>  0) & 0xff;
-            this.buffer[padLength-4] = (bitLenLo >>> 24) & 0xff;
-            this.buffer[padLength-3] = (bitLenLo >>> 16) & 0xff;
-            this.buffer[padLength-2] = (bitLenLo >>>  8) & 0xff;
-            this.buffer[padLength-1] = (bitLenLo >>>  0) & 0xff;
+            this.buffer[padLength - 8] = (bitLenHi >>> 24) & 0xff;
+            this.buffer[padLength - 7] = (bitLenHi >>> 16) & 0xff;
+            this.buffer[padLength - 6] = (bitLenHi >>>  8) & 0xff;
+            this.buffer[padLength - 5] = (bitLenHi >>>  0) & 0xff;
+            this.buffer[padLength - 4] = (bitLenLo >>> 24) & 0xff;
+            this.buffer[padLength - 3] = (bitLenLo >>> 16) & 0xff;
+            this.buffer[padLength - 2] = (bitLenLo >>>  8) & 0xff;
+            this.buffer[padLength - 1] = (bitLenLo >>>  0) & 0xff;
 
             hashBlocks(this.temp, this.state, this.buffer, 0, padLength);
 
@@ -204,10 +204,10 @@ export class Hash {
         }
 
         for (let i = 0; i < 8; i++) {
-            out[i*4+0] = (this.state[i] >>> 24) & 0xff;
-            out[i*4+1] = (this.state[i] >>> 16) & 0xff;
-            out[i*4+2] = (this.state[i] >>>  8) & 0xff;
-            out[i*4+3] = (this.state[i] >>>  0) & 0xff;
+            out[i * 4 + 0] = (this.state[i] >>> 24) & 0xff;
+            out[i * 4 + 1] = (this.state[i] >>> 16) & 0xff;
+            out[i * 4 + 2] = (this.state[i] >>>  8) & 0xff;
+            out[i * 4 + 3] = (this.state[i] >>>  0) & 0xff;
         }
 
         return this;
@@ -375,8 +375,8 @@ export function pbkdf2(password: Uint8Array, salt: Uint8Array, iterations: numbe
                 t[k] ^= u[k];
             }
         }
-        for (let j = 0; j < 32 && i*32 + j < dkLen; j++) {
-            dk[i*32 + j] = t[j];
+        for (let j = 0; j < 32 && i * 32 + j < dkLen; j++) {
+            dk[i * 32 + j] = t[j];
         }
     }
     for (let i = 0; i < 32; i++) {

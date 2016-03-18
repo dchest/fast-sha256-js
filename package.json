@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc && echo '});' | cat build/umd-prelude.js build/sha256.js - > sha256.js && rm build/sha256.js && uglifyjs sha256.js -c -m -o sha256.min.js",
     "test": "tape test/test.js | faucet",
-    "bench": "node test/bench.js"
+    "bench": "node test/bench.js",
+    "lint": "tslint src/*.ts"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,8 @@
   "devDependencies": {
     "faucet": "0.x.x",
     "tape": "2.x.x",
+    "tslint": "^3.6.0",
+    "typescript": "^1.8.9",
     "uglify-js": "2.x.x"
   }
 }
