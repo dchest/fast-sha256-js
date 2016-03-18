@@ -49,6 +49,25 @@ Returns a key of length dkLen derived using PBKDF2-HMAC-SHA256
 from the given password, salt, and the number of rounds.
 
 
+Usage with TypeScript
+---------------------
+
+```
+import sha256, { Hash, HMAC } from "fast-sha256";
+
+sha256(data) // default export is hash
+
+var h = new HMAC(key); // also Hash and HMAC classes
+var mac = h.update(data).digest();
+
+// alternatively:
+
+import * as sha256 from "fast-sha256";
+
+sha256.pbkdf2(password, salt, iterations, dkLen); // returns derived key 
+```
+
+
 Testing and building
 --------------------
 
