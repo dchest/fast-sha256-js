@@ -27,7 +27,7 @@
 //   sha256.pbkdf2(password, salt, rounds, dkLen) -> dk
 //
 //  Classes:
-//  
+//
 //   new sha256.Hash()
 //   new sha256.HMAC(key)
 //
@@ -110,7 +110,7 @@ var Hash = (function () {
         this.buffer = new Uint8Array(128); // buffer for data to hash
         this.bufferLength = 0; // number of bytes in buffer
         this.bytesHashed = 0; // number of total bytes hashed
-        this.finished = false; // indicates whether the hash was finalized 
+        this.finished = false; // indicates whether the hash was finalized
         this.reset();
     }
     // Resets hash state making it possible
@@ -278,7 +278,7 @@ var HMAC = (function () {
         this.inner.clean();
         this.outer.clean();
     };
-    // Updates state with provided data. 
+    // Updates state with provided data.
     HMAC.prototype.update = function (data) {
         this.inner.update(data);
         return this;
@@ -334,11 +334,11 @@ function pbkdf2(password, salt, iterations, dkLen) {
     var dk = new Uint8Array(dkLen);
     var prf = new HMAC(password);
     for (var i = 0; i * 32 < dkLen; i++) {
-        var k = i + 1;
-        ctr[0] = (k >>> 24) & 0xff;
-        ctr[1] = (k >>> 16) & 0xff;
-        ctr[2] = (k >>> 8) & 0xff;
-        ctr[3] = (k >>> 0) & 0xff;
+        var c = i + 1;
+        ctr[0] = (c >>> 24) & 0xff;
+        ctr[1] = (c >>> 16) & 0xff;
+        ctr[2] = (c >>> 8) & 0xff;
+        ctr[3] = (c >>> 0) & 0xff;
         prf.reset();
         prf.update(salt);
         prf.update(ctr);
@@ -349,8 +349,8 @@ function pbkdf2(password, salt, iterations, dkLen) {
         for (var j = 2; j <= iterations; j++) {
             prf.reset();
             prf.update(u).finish(u);
-            for (var k_1 = 0; k_1 < 32; k_1++) {
-                t[k_1] ^= u[k_1];
+            for (var k = 0; k < 32; k++) {
+                t[k] ^= u[k];
             }
         }
         for (var j = 0; j < 32 && i * 32 + j < dkLen; j++) {
