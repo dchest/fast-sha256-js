@@ -8,7 +8,8 @@
   },
   "scripts": {
     "build": "tsc && echo '});' | cat build/umd-prelude.js build/sha256.js - > sha256.js && rm build/sha256.js && uglifyjs sha256.js -c -m -o sha256.min.js",
-    "test": "tape test/test.js | faucet"
+    "test": "tape test/test.js | faucet",
+    "bench": "node test/bench.js"
   },
   "repository": {
     "type": "git",
