@@ -134,8 +134,12 @@ export class Hash {
 
     // Cleans internal buffers and re-initializes hash state.
     clean() {
-        for (let i = 0; i < this.buffer.length; i++) this.buffer[i] = 0;
-        for (let i = 0; i < this.temp.length; i++) this.temp[i] = 0;
+        for (let i = 0; i < this.buffer.length; i++) {
+            this.buffer[i] = 0;
+        }
+        for (let i = 0; i < this.temp.length; i++) {
+            this.temp[i] = 0;
+        }
         this.reset();
     }
 
@@ -331,7 +335,7 @@ export function hash(data: Uint8Array): Uint8Array {
     return digest;
 }
 
-// Function hash is both available as module.hash and as default export. 
+// Function hash is both available as module.hash and as default export.
 export default hash;
 
 // Returns HMAC-SHA256 of data under the key.
