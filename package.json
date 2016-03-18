@@ -1,6 +1,6 @@
 {
   "name": "fast-sha256",
-  "version": "0.9.2",
+  "version": "1.0.0",
   "description": "SHA-256, HMAC and PBKDF2 implementation with typed arrays for modern browsers and Node.js",
   "main": "sha256.js",
   "typings": "sha256",
