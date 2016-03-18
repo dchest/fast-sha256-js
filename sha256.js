@@ -15,6 +15,7 @@
         root.sha256 = sha256;
     }
 })(this, function(exports) {
+"use strict";
 // SHA-256 (+ HMAC and PBKDF2) for JavaScript.
 //
 // Written in 2014-2016 by Dmitry Chestnykh.
@@ -31,7 +32,8 @@
 //   new sha256.Hash()
 //   new sha256.HMAC(key)
 //
-"use strict";
+exports.digestLength = 32;
+exports.blockSize = 64;
 // SHA-256 constants
 var K = new Uint32Array([
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b,
@@ -102,8 +104,8 @@ function hashBlocks(w, v, p, pos, len) {
 // Hash implements SHA256 hash algorithm.
 var Hash = (function () {
     function Hash() {
-        this.digestLength = Hash.digestLength;
-        this.blockSize = Hash.blockSize;
+        this.digestLength = exports.digestLength;
+        this.blockSize = exports.blockSize;
         // Note: Int32Array is used instead of Uint32Array for performance reasons.
         this.state = new Int32Array(8); // hash state
         this.temp = new Int32Array(64); // temporary state
@@ -225,8 +227,6 @@ var Hash = (function () {
         this.finished = false;
         this.bufferLength = 0;
     };
-    Hash.digestLength = 32;
-    Hash.blockSize = 64;
     return Hash;
 }());
 exports.Hash = Hash;
@@ -328,12 +328,13 @@ exports.hmac = hmac;
 //
 // (For better security, avoid dkLen greater than hash length - 32 bytes).
 function pbkdf2(password, salt, iterations, dkLen) {
-    var ctr = new Uint8Array(4);
-    var t = new Uint8Array(32);
-    var u = new Uint8Array(32);
-    var dk = new Uint8Array(dkLen);
     var prf = new HMAC(password);
-    for (var i = 0; i * 32 < dkLen; i++) {
+    var len = prf.digestLength;
+    var ctr = new Uint8Array(4);
+    var t = new Uint8Array(len);
+    var u = new Uint8Array(len);
+    var dk = new Uint8Array(dkLen);
+    for (var i = 0; i * len < dkLen; i++) {
         var c = i + 1;
         ctr[0] = (c >>> 24) & 0xff;
         ctr[1] = (c >>> 16) & 0xff;
@@ -343,21 +344,21 @@ function pbkdf2(password, salt, iterations, dkLen) {
         prf.update(salt);
         prf.update(ctr);
         prf.finish(u);
-        for (var j = 0; j < 32; j++) {
+        for (var j = 0; j < len; j++) {
             t[j] = u[j];
         }
         for (var j = 2; j <= iterations; j++) {
             prf.reset();
             prf.update(u).finish(u);
-            for (var k = 0; k < 32; k++) {
+            for (var k = 0; k < len; k++) {
                 t[k] ^= u[k];
             }
         }
-        for (var j = 0; j < 32 && i * 32 + j < dkLen; j++) {
-            dk[i * 32 + j] = t[j];
+        for (var j = 0; j < len && i * len + j < dkLen; j++) {
+            dk[i * len + j] = t[j];
         }
     }
-    for (var i = 0; i < 32; i++) {
+    for (var i = 0; i < len; i++) {
         t[i] = u[i] = 0;
     }
     for (var i = 0; i < 4; i++) {

@@ -14,6 +14,8 @@
 //   new sha256.Hash()
 //   new sha256.HMAC(key)
 //
+export const digestLength: number = 32;
+export const blockSize: number = 64;
 
 // SHA-256 constants
 const K = new Uint32Array([
@@ -97,11 +99,8 @@ function hashBlocks(w: Int32Array, v: Int32Array, p: Uint8Array, pos: number, le
 
 // Hash implements SHA256 hash algorithm.
 export class Hash {
-    static digestLength: number = 32;
-    static blockSize: number = 64;
-
-    digestLength = Hash.digestLength;
-    blockSize = Hash.blockSize;
+    digestLength: number = digestLength;
+    blockSize: number = blockSize;
 
     // Note: Int32Array is used instead of Uint32Array for performance reasons.
     private state: Int32Array = new Int32Array(8); // hash state
@@ -118,7 +117,7 @@ export class Hash {
 
     // Resets hash state making it possible
     // to re-use this instance to hash other data.
-    reset() {
+    reset(): this {
         this.state[0] = 0x6a09e667;
         this.state[1] = 0xbb67ae85;
         this.state[2] = 0x3c6ef372;
@@ -147,7 +146,7 @@ export class Hash {
     //
     // Throws error when trying to update already finalized hash:
     // instance must be reset to use it again.
-    update(data: Uint8Array, dataLength: number = data.length): Hash {
+    update(data: Uint8Array, dataLength: number = data.length): this {
         if (this.finished) {
             throw new Error("SHA256: can't update because hash was finished.");
         }
@@ -177,7 +176,7 @@ export class Hash {
     // Finalizes hash state and puts hash into out.
     //
     // If hash was already finalized, puts the same value.
-    finish(out: Uint8Array): Hash {
+    finish(out: Uint8Array): this {
         if (!this.finished) {
             const bytesHashed = this.bytesHashed;
             const left = this.bufferLength;
@@ -284,7 +283,7 @@ export class HMAC {
     // Returns HMAC state to the state initialized with key
     // to make it possible to run HMAC over the other data with the same
     // key without creating a new instance.
-    reset() {
+    reset(): this {
         this.inner._restoreState(this.istate, this.inner.blockSize);
         this.outer._restoreState(this.ostate, this.outer.blockSize);
         return this;
@@ -300,13 +299,13 @@ export class HMAC {
     }
 
     // Updates state with provided data.
-    update(data: Uint8Array): HMAC {
+    update(data: Uint8Array): this {
         this.inner.update(data);
         return this;
     }
 
     // Finalizes HMAC and puts the result in out.
-    finish(out: Uint8Array): HMAC {
+    finish(out: Uint8Array): this {
         if (this.outer.finished) {
             this.outer.finish(out);
         } else {
@@ -350,13 +349,14 @@ export function hmac(key: Uint8Array, data: Uint8Array) {
 //
 // (For better security, avoid dkLen greater than hash length - 32 bytes).
 export function pbkdf2(password: Uint8Array, salt: Uint8Array, iterations: number, dkLen: number) {
-    const ctr = new Uint8Array(4);
-    const t = new Uint8Array(32);
-    const u = new Uint8Array(32);
-    const dk = new Uint8Array(dkLen);
     const prf = new HMAC(password);
+    const len = prf.digestLength;
+    const ctr = new Uint8Array(4);
+    const t = new Uint8Array(len);
+    const u = new Uint8Array(len);
+    const dk = new Uint8Array(dkLen);
 
-    for (let i = 0; i * 32 < dkLen; i++) {
+    for (let i = 0; i * len < dkLen; i++) {
         let c = i + 1;
         ctr[0] = (c >>> 24) & 0xff;
         ctr[1] = (c >>> 16) & 0xff;
@@ -366,21 +366,21 @@ export function pbkdf2(password: Uint8Array, salt: Uint8Array, iterations: numbe
         prf.update(salt);
         prf.update(ctr);
         prf.finish(u);
-        for (let j = 0; j < 32; j++) {
+        for (let j = 0; j < len; j++) {
             t[j] = u[j];
         }
         for (let j = 2; j <= iterations; j++) {
             prf.reset();
             prf.update(u).finish(u);
-            for (let k = 0; k < 32; k++) {
+            for (let k = 0; k < len; k++) {
                 t[k] ^= u[k];
             }
         }
-        for (let j = 0; j < 32 && i * 32 + j < dkLen; j++) {
-            dk[i * 32 + j] = t[j];
+        for (let j = 0; j < len && i * len + j < dkLen; j++) {
+            dk[i * len + j] = t[j];
         }
     }
-    for (let i = 0; i < 32; i++) {
+    for (let i = 0; i < len; i++) {
         t[i] = u[i] = 0;
     }
     for (let i = 0; i < 4; i++) {

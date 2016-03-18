@@ -1,6 +1,6 @@
+export declare const digestLength: number;
+export declare const blockSize: number;
 export declare class Hash {
-    static digestLength: number;
-    static blockSize: number;
     digestLength: number;
     blockSize: number;
     private state;
@@ -12,8 +12,8 @@ export declare class Hash {
     constructor();
     reset(): this;
     clean(): void;
-    update(data: Uint8Array, dataLength?: number): Hash;
-    finish(out: Uint8Array): Hash;
+    update(data: Uint8Array, dataLength?: number): this;
+    finish(out: Uint8Array): this;
     digest(): Uint8Array;
     _saveState(out: Uint8Array): void;
     _restoreState(from: Uint8Array, bytesHashed: number): void;
@@ -28,8 +28,8 @@ export declare class HMAC {
     constructor(key: Uint8Array);
     reset(): this;
     clean(): void;
-    update(data: Uint8Array): HMAC;
-    finish(out: Uint8Array): HMAC;
+    update(data: Uint8Array): this;
+    finish(out: Uint8Array): this;
     digest(): Uint8Array;
 }
 export declare function hash(data: Uint8Array): Uint8Array;
