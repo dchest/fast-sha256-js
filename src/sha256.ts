@@ -356,11 +356,11 @@ export function pbkdf2(password: Uint8Array, salt: Uint8Array, iterations: numbe
     const prf = new HMAC(password);
 
     for (let i = 0; i * 32 < dkLen; i++) {
-        let k = i + 1;
-        ctr[0] = (k >>> 24) & 0xff;
-        ctr[1] = (k >>> 16) & 0xff;
-        ctr[2] = (k >>> 8)  & 0xff;
-        ctr[3] = (k >>> 0)  & 0xff;
+        let c = i + 1;
+        ctr[0] = (c >>> 24) & 0xff;
+        ctr[1] = (c >>> 16) & 0xff;
+        ctr[2] = (c >>> 8)  & 0xff;
+        ctr[3] = (c >>> 0)  & 0xff;
         prf.reset();
         prf.update(salt);
         prf.update(ctr);
