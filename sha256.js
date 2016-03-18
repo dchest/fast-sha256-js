@@ -32,6 +32,7 @@
 //   new sha256.HMAC(key)
 //
 "use strict";
+// SHA-256 constants
 var K = new Uint32Array([
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b,
     0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01,
@@ -98,40 +99,42 @@ function hashBlocks(w, v, p, pos, len) {
     }
     return pos;
 }
+// Hash implements SHA256 hash algorithm.
 var Hash = (function () {
     function Hash() {
         this.digestLength = Hash.digestLength;
         this.blockSize = Hash.blockSize;
         // Note: Int32Array is used instead of Uint32Array for performance reasons.
-        this.v = new Int32Array(8); // hash state
-        this.w = new Int32Array(64); // temporary state
-        this.buf = new Uint8Array(128); // buffer for data to hash
-        this.buflen = 0; // number of bytes in buffer
-        this.len = 0; // number of total bytes hashed
+        this.state = new Int32Array(8); // hash state
+        this.temp = new Int32Array(64); // temporary state
+        this.buffer = new Uint8Array(128); // buffer for data to hash
+        this.bufferLength = 0; // number of bytes in buffer
+        this.bytesHashed = 0; // number of total bytes hashed
         this.finished = false; // indicates whether the hash was finalized 
         this.reset();
     }
-    // Re-initializes hash state making it possible
+    // Resets hash state making it possible
     // to re-use this instance to hash other data.
     Hash.prototype.reset = function () {
-        this.v[0] = 0x6a09e667;
-        this.v[1] = 0xbb67ae85;
-        this.v[2] = 0x3c6ef372;
-        this.v[3] = 0xa54ff53a;
-        this.v[4] = 0x510e527f;
-        this.v[5] = 0x9b05688c;
-        this.v[6] = 0x1f83d9ab;
-        this.v[7] = 0x5be0cd19;
-        this.buflen = 0;
-        this.len = 0;
+        this.state[0] = 0x6a09e667;
+        this.state[1] = 0xbb67ae85;
+        this.state[2] = 0x3c6ef372;
+        this.state[3] = 0xa54ff53a;
+        this.state[4] = 0x510e527f;
+        this.state[5] = 0x9b05688c;
+        this.state[6] = 0x1f83d9ab;
+        this.state[7] = 0x5be0cd19;
+        this.bufferLength = 0;
+        this.bytesHashed = 0;
         this.finished = false;
+        return this;
     };
     // Cleans internal buffers and re-initializes hash state.
     Hash.prototype.clean = function () {
-        for (var i = 0; i < this.buf.length; i++)
-            this.buf[i] = 0;
-        for (var i = 0; i < this.w.length; i++)
-            this.w[i] = 0;
+        for (var i = 0; i < this.buffer.length; i++)
+            this.buffer[i] = 0;
+        for (var i = 0; i < this.temp.length; i++)
+            this.temp[i] = 0;
         this.reset();
     };
     // Updates hash state with the given data.
@@ -147,23 +150,23 @@ var Hash = (function () {
             throw new Error("SHA256: can't update because hash was finished.");
         }
         var dataPos = 0;
-        this.len += dataLength;
-        if (this.buflen > 0) {
-            while (this.buflen < 64 && dataLength > 0) {
-                this.buf[this.buflen++] = data[dataPos++];
+        this.bytesHashed += dataLength;
+        if (this.bufferLength > 0) {
+            while (this.bufferLength < 64 && dataLength > 0) {
+                this.buffer[this.bufferLength++] = data[dataPos++];
                 dataLength--;
             }
-            if (this.buflen === 64) {
-                hashBlocks(this.w, this.v, this.buf, 0, 64);
-                this.buflen = 0;
+            if (this.bufferLength === 64) {
+                hashBlocks(this.temp, this.state, this.buffer, 0, 64);
+                this.bufferLength = 0;
             }
         }
         if (dataLength >= 64) {
-            dataPos = hashBlocks(this.w, this.v, data, dataPos, dataLength);
+            dataPos = hashBlocks(this.temp, this.state, data, dataPos, dataLength);
             dataLength %= 64;
         }
         while (dataLength > 0) {
-            this.buf[this.buflen++] = data[dataPos++];
+            this.buffer[this.bufferLength++] = data[dataPos++];
             dataLength--;
         }
         return this;
@@ -173,31 +176,31 @@ var Hash = (function () {
     // If hash was already finalized, puts the same value.
     Hash.prototype.finish = function (out) {
         if (!this.finished) {
-            var mlen = this.len;
-            var left = this.buflen;
-            var bhi = (mlen / 0x20000000) | 0;
-            var blo = mlen << 3;
-            var padlen = (mlen % 64 < 56) ? 64 : 128;
-            this.buf[left] = 0x80;
-            for (var i = left + 1; i < padlen - 8; i++) {
-                this.buf[i] = 0;
+            var bytesHashed = this.bytesHashed;
+            var left = this.bufferLength;
+            var bitLenHi = (bytesHashed / 0x20000000) | 0;
+            var bitLenLo = bytesHashed << 3;
+            var padLength = (bytesHashed % 64 < 56) ? 64 : 128;
+            this.buffer[left] = 0x80;
+            for (var i = left + 1; i < padLength - 8; i++) {
+                this.buffer[i] = 0;
             }
-            this.buf[padlen - 8] = (bhi >>> 24) & 0xff;
-            this.buf[padlen - 7] = (bhi >>> 16) & 0xff;
-            this.buf[padlen - 6] = (bhi >>> 8) & 0xff;
-            this.buf[padlen - 5] = (bhi >>> 0) & 0xff;
-            this.buf[padlen - 4] = (blo >>> 24) & 0xff;
-            this.buf[padlen - 3] = (blo >>> 16) & 0xff;
-            this.buf[padlen - 2] = (blo >>> 8) & 0xff;
-            this.buf[padlen - 1] = (blo >>> 0) & 0xff;
-            hashBlocks(this.w, this.v, this.buf, 0, padlen);
+            this.buffer[padLength - 8] = (bitLenHi >>> 24) & 0xff;
+            this.buffer[padLength - 7] = (bitLenHi >>> 16) & 0xff;
+            this.buffer[padLength - 6] = (bitLenHi >>> 8) & 0xff;
+            this.buffer[padLength - 5] = (bitLenHi >>> 0) & 0xff;
+            this.buffer[padLength - 4] = (bitLenLo >>> 24) & 0xff;
+            this.buffer[padLength - 3] = (bitLenLo >>> 16) & 0xff;
+            this.buffer[padLength - 2] = (bitLenLo >>> 8) & 0xff;
+            this.buffer[padLength - 1] = (bitLenLo >>> 0) & 0xff;
+            hashBlocks(this.temp, this.state, this.buffer, 0, padLength);
             this.finished = true;
         }
         for (var i = 0; i < 8; i++) {
-            out[i * 4 + 0] = (this.v[i] >>> 24) & 0xff;
-            out[i * 4 + 1] = (this.v[i] >>> 16) & 0xff;
-            out[i * 4 + 2] = (this.v[i] >>> 8) & 0xff;
-            out[i * 4 + 3] = (this.v[i] >>> 0) & 0xff;
+            out[i * 4 + 0] = (this.state[i] >>> 24) & 0xff;
+            out[i * 4 + 1] = (this.state[i] >>> 16) & 0xff;
+            out[i * 4 + 2] = (this.state[i] >>> 8) & 0xff;
+            out[i * 4 + 3] = (this.state[i] >>> 0) & 0xff;
         }
         return this;
     };
@@ -212,6 +215,7 @@ var Hash = (function () {
     return Hash;
 }());
 exports.Hash = Hash;
+// HMAC implements HMAC-SHA256 message authentication algorithm.
 var HMAC = (function () {
     function HMAC(key) {
         this.inner = new Hash();
@@ -238,22 +242,27 @@ var HMAC = (function () {
         this.istate = new Uint32Array(this.digestLength / 4);
         this.ostate = new Uint32Array(this.digestLength / 4);
         for (var i = 0; i < this.istate.length; i++) {
-            this.istate[i] = this.inner.v[i];
-            this.ostate[i] = this.outer.v[i];
+            this.istate[i] = this.inner.state[i];
+            this.ostate[i] = this.outer.state[i];
         }
         for (var i = 0; i < pad.length; i++) {
             pad[i] = 0;
         }
     }
+    // Returns HMAC state to the state initialized with key
+    // to make it possible to run HMAC over the other data with the same
+    // key without creating a new instance.
     HMAC.prototype.reset = function () {
         for (var i = 0; i < this.istate.length; i++) {
-            this.inner.v[i] = this.istate[i];
-            this.outer.v[i] = this.ostate[i];
+            this.inner.state[i] = this.istate[i];
+            this.outer.state[i] = this.ostate[i];
         }
-        this.inner.len = this.outer.len = this.inner.blockSize;
-        this.inner.buflen = this.outer.buflen = 0;
+        this.inner.bytesHashed = this.outer.bytesHashed = this.inner.blockSize;
+        this.inner.bufferLength = this.outer.bufferLength = 0;
         this.inner.finished = this.outer.finished = false;
+        return this;
     };
+    // Cleans HMAC state.
     HMAC.prototype.clean = function () {
         for (var i = 0; i < this.istate.length; i++) {
             this.ostate[i] = this.istate[i] = 0;
@@ -261,10 +270,12 @@ var HMAC = (function () {
         this.inner.clean();
         this.outer.clean();
     };
+    // Updates state with provided data. 
     HMAC.prototype.update = function (data) {
         this.inner.update(data);
         return this;
     };
+    // Finalizes HMAC and puts the result in out.
     HMAC.prototype.finish = function (out) {
         if (this.outer.finished) {
             this.outer.finish(out);
@@ -275,6 +286,7 @@ var HMAC = (function () {
         }
         return this;
     };
+    // Returns message authentication code.
     HMAC.prototype.digest = function () {
         var out = new Uint8Array(this.digestLength);
         this.finish(out);
@@ -283,6 +295,7 @@ var HMAC = (function () {
     return HMAC;
 }());
 exports.HMAC = HMAC;
+// Returns SHA256 hash of data.
 function hash(data) {
     var h = (new Hash()).update(data);
     var digest = h.digest();
@@ -292,6 +305,7 @@ function hash(data) {
 exports.hash = hash;
 exports.__esModule = true;
 exports["default"] = hash;
+// Returns HMAC-SHA256 of data under the key.
 function hmac(key, data) {
     var h = (new HMAC(key)).update(data);
     var digest = h.digest();
@@ -299,7 +313,13 @@ function hmac(key, data) {
     return digest;
 }
 exports.hmac = hmac;
-function pbkdf2(password, salt, rounds, dkLen) {
+// Derives a key from password and salt using PBKDF2-HMAC-SHA256
+// with the given number of iterations.
+//
+// The number of bytes returned is equal to dkLen.
+//
+// (For better security, avoid dkLen greater than hash length - 32 bytes).
+function pbkdf2(password, salt, iterations, dkLen) {
     var ctr = new Uint8Array(4);
     var t = new Uint8Array(32);
     var u = new Uint8Array(32);
@@ -318,7 +338,7 @@ function pbkdf2(password, salt, rounds, dkLen) {
         for (var j = 0; j < 32; j++) {
             t[j] = u[j];
         }
-        for (var j = 2; j <= rounds; j++) {
+        for (var j = 2; j <= iterations; j++) {
             prf.reset();
             prf.update(u).finish(u);
             for (var k_1 = 0; k_1 < 32; k_1++) {
