@@ -133,10 +133,12 @@ var Hash = (function () {
     };
     // Cleans internal buffers and re-initializes hash state.
     Hash.prototype.clean = function () {
-        for (var i = 0; i < this.buffer.length; i++)
+        for (var i = 0; i < this.buffer.length; i++) {
             this.buffer[i] = 0;
-        for (var i = 0; i < this.temp.length; i++)
+        }
+        for (var i = 0; i < this.temp.length; i++) {
             this.temp[i] = 0;
+        }
         this.reset();
     };
     // Updates hash state with the given data.
@@ -254,8 +256,8 @@ var HMAC = (function () {
             pad[i] ^= 0x36 ^ 0x5c;
         }
         this.outer.update(pad);
-        this.istate = new Uint32Array(this.digestLength / 4);
-        this.ostate = new Uint32Array(this.digestLength / 4);
+        this.istate = new Uint32Array(8);
+        this.ostate = new Uint32Array(8);
         this.inner._saveState(this.istate);
         this.outer._saveState(this.ostate);
         for (var i = 0; i < pad.length; i++) {

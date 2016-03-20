@@ -273,8 +273,8 @@ export class HMAC {
         }
         this.outer.update(pad);
 
-        this.istate = new Uint32Array(this.digestLength / 4);
-        this.ostate = new Uint32Array(this.digestLength / 4);
+        this.istate = new Uint32Array(8);
+        this.ostate = new Uint32Array(8);
 
         this.inner._saveState(this.istate);
         this.outer._saveState(this.ostate);
