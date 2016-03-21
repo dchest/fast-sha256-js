@@ -15,8 +15,8 @@ export declare class Hash {
     update(data: Uint8Array, dataLength?: number): this;
     finish(out: Uint8Array): this;
     digest(): Uint8Array;
-    _saveState(out: Uint8Array): void;
-    _restoreState(from: Uint8Array, bytesHashed: number): void;
+    _saveState(out: Uint32Array): void;
+    _restoreState(from: Uint32Array, bytesHashed: number): void;
 }
 export declare class HMAC {
     private inner;
