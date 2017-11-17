@@ -16,6 +16,7 @@
     }
 })(this, function(exports) {
 "use strict";
+exports.__esModule = true;
 // SHA-256 (+ HMAC and PBKDF2) for JavaScript.
 //
 // Written in 2014-2016 by Dmitry Chestnykh.
@@ -102,7 +103,7 @@ function hashBlocks(w, v, p, pos, len) {
     return pos;
 }
 // Hash implements SHA256 hash algorithm.
-var Hash = (function () {
+var Hash = /** @class */ (function () {
     function Hash() {
         this.digestLength = exports.digestLength;
         this.blockSize = exports.blockSize;
@@ -233,7 +234,7 @@ var Hash = (function () {
 }());
 exports.Hash = Hash;
 // HMAC implements HMAC-SHA256 message authentication algorithm.
-var HMAC = (function () {
+var HMAC = /** @class */ (function () {
     function HMAC(key) {
         this.inner = new Hash();
         this.outer = new Hash();
@@ -313,7 +314,7 @@ function hash(data) {
     return digest;
 }
 exports.hash = hash;
-exports.__esModule = true;
+// Function hash is both available as module.hash and as default export.
 exports["default"] = hash;
 // Returns HMAC-SHA256 of data under the key.
 function hmac(key, data) {
