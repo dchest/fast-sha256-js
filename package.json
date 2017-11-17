@@ -26,12 +26,12 @@
     "hmac"
   ],
   "author": "Dmitry Chestnykh",
-  "license": "Public domain",
+  "license": "Unlicense",
   "devDependencies": {
     "faucet": "0.x.x",
     "tape": "2.x.x",
     "tslint": "^3.6.0",
-    "typescript": "^1.8.9",
-    "uglify-js": "2.x.x"
+    "typescript": "^2.6.1",
+    "uglify-js": "^3.1.9"
   }
 }
