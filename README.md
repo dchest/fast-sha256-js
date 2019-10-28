@@ -14,13 +14,7 @@ Public domain. No warranty.
 Installation
 ------------
 
-You can install fast-sha256-js via a package manager:
-
-[Bower](http://bower.io):
-
-    $ bower install fast-sha256
-
-[NPM](https://www.npmjs.org/):
+You can install fast-sha256-js via [NPM](https://www.npmjs.org/):
 
     $ npm install fast-sha256
 
@@ -55,12 +49,12 @@ There are also classes `Hash` and `HMAC`:
 ### new sha256.Hash()
 
 Constructor for hash instance. Should be used with `new`.
-Available methods: `update()`, `digest()`, `reset()`, etc. 
+Available methods: `update()`, `digest()`, `reset()`, etc.
 
 ### new sha256.HMAC(key)
 
 Constructor for HMAC instance. Should be used with `new`.
-Available methods: `update()`, `digest()`, `reset()`, etc. 
+Available methods: `update()`, `digest()`, `reset()`, etc.
 
 See comments in `src/sha256.ts` for details.
 
