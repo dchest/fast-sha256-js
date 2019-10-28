@@ -5,14 +5,14 @@ var hashVectors = require('./data/sha256.random');
 var hmacVectors = require('./data/hmac.random');
 var pbkdfVectors = require('./data/pbkdf.random');
 
-function enc(x) { return (new Buffer(x)).toString('base64'); }
+function enc(x) { return (Buffer.from(x)).toString('base64'); }
 function dec(s) {
-  var b = new Buffer(s, 'base64');
+  var b = Buffer.from(s, 'base64');
   var x = new Uint8Array(b.length);
   for (var i = 0; i < b.length; i++) x[i] = b[i];
   return x;
 }
-function hex(x) { return (new Buffer(x).toString('hex')); }
+function hex(x) { return (Buffer.from(x).toString('hex')); }
 
 test('sha256 random test vectors', function(t) {
   hashVectors.forEach(function(vec) {
