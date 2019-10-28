@@ -3,7 +3,11 @@
   "version": "1.1.0",
   "description": "SHA-256, HMAC and PBKDF2 implementation with typed arrays for modern browsers and Node.js",
   "main": "sha256.js",
-  "files": ["sha256.js", "sha256.min.js", "sha256.d.ts"],
+  "files": [
+    "sha256.js",
+    "sha256.min.js",
+    "sha256.d.ts"
+  ],
   "typings": "sha256",
   "directories": {
     "test": "test"
