@@ -34,9 +34,9 @@
   "license": "Unlicense",
   "devDependencies": {
     "faucet": "0.x.x",
-    "tape": "2.x.x",
-    "tslint": "^3.6.0",
-    "typescript": "^2.6.1",
+    "tape": "4.11.0",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.4",
     "uglify-js": "^3.1.9"
   }
 }
