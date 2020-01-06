@@ -44,6 +44,11 @@ Returns a key of length dkLen derived using PBKDF2-HMAC-SHA256
 from the given password, salt, and the number of rounds.
 
 
+### sha256.hkdf(key, salt, info?, length?)
+
+Returns a key of the given length derived using HKDF as
+described in RFC 5869.
+
 There are also classes `Hash` and `HMAC`:
 
 ### new sha256.Hash()
