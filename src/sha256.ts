@@ -346,6 +346,62 @@ export function hmac(key: Uint8Array, data: Uint8Array) {
     return digest;
 }
 
+function fillBuffer(buffer: Uint8Array, hmac_: HMAC, info: Uint8Array, counter: number) {
+    // Counter is a byte value: check if it overflowed.
+    if (counter > 255) {
+        throw new Error("hkdf: cannot expand more");
+    }
+
+    // Prepare HMAC instance for new data with old key.
+    hmac_.reset();
+
+    // Hash in previous output if it was generated
+    // (i.e. counter is greater than 1).
+    if (counter > 1) {
+        hmac_.update(buffer);
+    }
+
+    // Hash in info if it exists.
+    if (info) {
+        hmac_.update(info);
+    }
+
+    // Hash in the counter.
+    // TODO(dchest): avoid allocation.
+    hmac_.update(new Uint8Array([counter]));
+
+    // Output result to buffer and clean HMAC instance.
+    hmac_.finish(buffer);
+}
+
+export function hkdf(key: Uint8Array, salt: Uint8Array, info?: Uint8Array, length = 32) {
+    let counter = 1;
+
+    // HKDF-Extract uses salt as HMAC key, and key as data.
+    const okm = hmac(salt, key);
+
+    // Initialize HMAC for expanding with extracted key.
+    let hmac_ = new HMAC(okm);
+
+    // Allocate buffer.
+    let buffer = new Uint8Array(hmac_.digestLength);
+    let _bufpos = buffer.length;
+
+    const out = new Uint8Array(length);
+    for (let i = 0; i < out.length; i++) {
+        if (_bufpos === buffer.length) {
+            fillBuffer(buffer, hmac_, info, counter);
+            counter++;
+            _bufpos = 0;
+        }
+        out[i] = buffer[_bufpos++];
+    }
+
+    hmac_.clean();
+    buffer.fill(0);
+    return out;
+}
+
 // Derives a key from password and salt using PBKDF2-HMAC-SHA256
 // with the given number of iterations.
 //
