@@ -342,7 +342,6 @@ function fillBuffer(buffer, hmac, info, counter) {
         hmac.update(info);
     }
     // Hash in the counter.
-    // TODO(dchest): avoid allocation.
     hmac.update(counter);
     // Output result to buffer and clean HMAC instance.
     hmac.finish(buffer);

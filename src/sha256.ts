@@ -368,7 +368,6 @@ function fillBuffer(buffer: Uint8Array, hmac: HMAC, info: Uint8Array, counter: U
     }
 
     // Hash in the counter.
-    // TODO(dchest): avoid allocation.
     hmac.update(counter);
 
     // Output result to buffer and clean HMAC instance.
@@ -379,17 +378,17 @@ function fillBuffer(buffer: Uint8Array, hmac: HMAC, info: Uint8Array, counter: U
 }
 
 export function hkdf(key: Uint8Array, salt: Uint8Array, info?: Uint8Array, length: number = 32) {
-    let counter = new Uint8Array([1]);
+    const counter = new Uint8Array([1]);
 
     // HKDF-Extract uses salt as HMAC key, and key as data.
     const okm = hmac(salt, key);
 
     // Initialize HMAC for expanding with extracted key.
     // Ensure no collisions with `hmac` function.
-    let hmac_ = new HMAC(okm);
+    const hmac_ = new HMAC(okm);
 
     // Allocate buffer.
-    let buffer = new Uint8Array(hmac_.digestLength);
+    const buffer = new Uint8Array(hmac_.digestLength);
     let bufpos = buffer.length;
 
     const out = new Uint8Array(length);
