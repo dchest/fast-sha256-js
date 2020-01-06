@@ -346,59 +346,64 @@ export function hmac(key: Uint8Array, data: Uint8Array) {
     return digest;
 }
 
-function fillBuffer(buffer: Uint8Array, hmac_: HMAC, info: Uint8Array, counter: number) {
+function fillBuffer(buffer: Uint8Array, hmac: HMAC, info: Uint8Array, counter: Uint8Array) {
     // Counter is a byte value: check if it overflowed.
-    if (counter > 255) {
+    const num = counter[0];
+    if (num > 255) {
         throw new Error("hkdf: cannot expand more");
     }
 
     // Prepare HMAC instance for new data with old key.
-    hmac_.reset();
+    hmac.reset();
 
     // Hash in previous output if it was generated
     // (i.e. counter is greater than 1).
-    if (counter > 1) {
-        hmac_.update(buffer);
+    if (num > 1) {
+        hmac.update(buffer);
     }
 
     // Hash in info if it exists.
     if (info) {
-        hmac_.update(info);
+        hmac.update(info);
     }
 
     // Hash in the counter.
     // TODO(dchest): avoid allocation.
-    hmac_.update(new Uint8Array([counter]));
+    hmac.update(counter);
 
     // Output result to buffer and clean HMAC instance.
-    hmac_.finish(buffer);
+    hmac.finish(buffer);
+
+    // Increment counter inside typed array, this works properly.
+    counter[0]++;
 }
 
-export function hkdf(key: Uint8Array, salt: Uint8Array, info?: Uint8Array, length = 32) {
-    let counter = 1;
+export function hkdf(key: Uint8Array, salt: Uint8Array, info?: Uint8Array, length: number = 32) {
+    let counter = new Uint8Array([1]);
 
     // HKDF-Extract uses salt as HMAC key, and key as data.
     const okm = hmac(salt, key);
 
     // Initialize HMAC for expanding with extracted key.
+    // Ensure no collisions with `hmac` function.
     let hmac_ = new HMAC(okm);
 
     // Allocate buffer.
     let buffer = new Uint8Array(hmac_.digestLength);
-    let _bufpos = buffer.length;
+    let bufpos = buffer.length;
 
     const out = new Uint8Array(length);
     for (let i = 0; i < out.length; i++) {
-        if (_bufpos === buffer.length) {
+        if (bufpos === buffer.length) {
             fillBuffer(buffer, hmac_, info, counter);
-            counter++;
-            _bufpos = 0;
+            bufpos = 0;
         }
-        out[i] = buffer[_bufpos++];
+        out[i] = buffer[bufpos++];
     }
 
     hmac_.clean();
     buffer.fill(0);
+    counter.fill(0);
     return out;
 }
 
