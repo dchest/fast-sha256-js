@@ -35,4 +35,5 @@ export declare class HMAC {
 export declare function hash(data: Uint8Array): Uint8Array;
 export default hash;
 export declare function hmac(key: Uint8Array, data: Uint8Array): Uint8Array;
+export declare function hkdf(key: Uint8Array, salt: Uint8Array, info?: Uint8Array, length?: number): Uint8Array;
 export declare function pbkdf2(password: Uint8Array, salt: Uint8Array, iterations: number, dkLen: number): Uint8Array;

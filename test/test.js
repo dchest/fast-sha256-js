@@ -4,6 +4,7 @@ var test = require('tape');
 var hashVectors = require('./data/sha256.random');
 var hmacVectors = require('./data/hmac.random');
 var pbkdfVectors = require('./data/pbkdf.random');
+var hkdfVectors = require('./data/hkdf.rfc');
 
 function enc(x) { return (Buffer.from(x)).toString('base64'); }
 function dec(s) {
@@ -13,6 +14,7 @@ function dec(s) {
   return x;
 }
 function hex(x) { return (Buffer.from(x).toString('hex')); }
+function uint(x) { return Buffer.from(x, 'hex') }
 
 test('sha256 random test vectors', function(t) {
   hashVectors.forEach(function(vec) {
@@ -52,19 +54,41 @@ test('sha256.hmac random test vectors', function(t) {
 });
 
 test('sha256.HMAC API test', function(t) {
-    var vec = hmacVectors[10];
-    var h = new sha256.HMAC(dec(vec[1]));
-    h.update(dec(vec[0]));
-    var digest = h.digest();
-    t.equal(hex(digest), hex(dec(vec[2])));
-    t.equal(hex(h.digest()), hex(digest));
-    t.throws(function() { h.update(dec(vec[0])); }, Error);
-    h.reset();
-    h.update(dec(vec[0]));
-    t.equal(hex(h.digest()), hex(digest));
-    h.clean();
-    t.notEqual(hex(h.digest()), hex(digest));
-    t.end();
+  var vec = hmacVectors[10];
+  var h = new sha256.HMAC(dec(vec[1]));
+  h.update(dec(vec[0]));
+  var digest = h.digest();
+  t.equal(hex(digest), hex(dec(vec[2])));
+  t.equal(hex(h.digest()), hex(digest));
+  t.throws(function() { h.update(dec(vec[0])); }, Error);
+  h.reset();
+  h.update(dec(vec[0]));
+  t.equal(hex(h.digest()), hex(digest));
+  h.clean();
+  t.notEqual(hex(h.digest()), hex(digest));
+  t.end();
+});
+
+test('sha256.HKDF RFC test vectors', function(t) {
+  hkdfVectors.forEach(vector => {
+    var key = uint(vector.key);
+    var salt = uint(vector.salt);
+    var info = vector.info && uint(vector.info);
+    var length = vector.length;
+    var expected = uint(vector.result);
+
+    var actual = sha256.hkdf(key, salt, info, length);
+    t.equal(hex(actual), hex(expected));
+  });
+
+  t.end();
+});
+
+test("sha256.HKDF should throw if generated more than 255 blocks", function(t) {
+  t.throws(function() {
+    sha256.hkdf(new Uint8Array([0, 1, 2, 3, 4]), new Uint8Array([0, 1]), undefined, 256 * 32);
+  }, Error);
+  t.end();
 });
 
 test('sha256.pbkdf2 random test vectors', function(t) {
