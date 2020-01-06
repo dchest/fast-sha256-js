@@ -84,6 +84,13 @@ test('sha256.HKDF RFC test vectors', function(t) {
   t.end();
 });
 
+test("sha256.HKDF should throw if generated more than 255 blocks", function(t) {
+  t.throws(function() {
+    sha256.hkdf(new Uint8Array([0, 1, 2, 3, 4]), new Uint8Array([0, 1]), undefined, 256 * 32);
+  }, Error);
+  t.end();
+});
+
 test('sha256.pbkdf2 random test vectors', function(t) {
   pbkdfVectors.forEach(function(vec, i) {
     var password = dec(vec[0]);

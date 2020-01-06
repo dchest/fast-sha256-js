@@ -349,7 +349,8 @@ export function hmac(key: Uint8Array, data: Uint8Array) {
 function fillBuffer(buffer: Uint8Array, hmac: HMAC, info: Uint8Array, counter: Uint8Array) {
     // Counter is a byte value: check if it overflowed.
     const num = counter[0];
-    if (num > 255) {
+
+    if (num === 0) {
         throw new Error("hkdf: cannot expand more");
     }
 
@@ -392,7 +393,7 @@ export function hkdf(key: Uint8Array, salt: Uint8Array, info?: Uint8Array, lengt
     let bufpos = buffer.length;
 
     const out = new Uint8Array(length);
-    for (let i = 0; i < out.length; i++) {
+    for (let i = 0; i < length; i++) {
         if (bufpos === buffer.length) {
             fillBuffer(buffer, hmac_, info, counter);
             bufpos = 0;

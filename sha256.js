@@ -327,7 +327,7 @@ exports.hmac = hmac;
 function fillBuffer(buffer, hmac, info, counter) {
     // Counter is a byte value: check if it overflowed.
     var num = counter[0];
-    if (num > 255) {
+    if (num === 0) {
         throw new Error("hkdf: cannot expand more");
     }
     // Prepare HMAC instance for new data with old key.
@@ -360,7 +360,7 @@ function hkdf(key, salt, info, length) {
     var buffer = new Uint8Array(hmac_.digestLength);
     var bufpos = buffer.length;
     var out = new Uint8Array(length);
-    for (var i = 0; i < out.length; i++) {
+    for (var i = 0; i < length; i++) {
         if (bufpos === buffer.length) {
             fillBuffer(buffer, hmac_, info, counter);
             bufpos = 0;
