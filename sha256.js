@@ -324,6 +324,8 @@ function hmac(key, data) {
     return digest;
 }
 exports.hmac = hmac;
+// Fills hkdf buffer like this:
+// T(1) = HMAC-Hash(PRK, T(0) | info | 0x01)
 function fillBuffer(buffer, hmac, info, counter) {
     // Counter is a byte value: check if it overflowed.
     var num = counter[0];
@@ -348,7 +350,9 @@ function fillBuffer(buffer, hmac, info, counter) {
     // Increment counter inside typed array, this works properly.
     counter[0]++;
 }
+var hkdfSalt = new Uint8Array(exports.digestLength); // Filled with zeroes.
 function hkdf(key, salt, info, length) {
+    if (salt === void 0) { salt = hkdfSalt; }
     if (length === void 0) { length = 32; }
     var counter = new Uint8Array([1]);
     // HKDF-Extract uses salt as HMAC key, and key as data.
