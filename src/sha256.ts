@@ -348,7 +348,7 @@ export function hmac(key: Uint8Array, data: Uint8Array) {
 
 // Fills hkdf buffer like this:
 // T(1) = HMAC-Hash(PRK, T(0) | info | 0x01)
-function fillBuffer(buffer: Uint8Array, hmac: HMAC, info: Uint8Array, counter: Uint8Array) {
+function fillBuffer(buffer: Uint8Array, hmac: HMAC, info: Uint8Array | undefined, counter: Uint8Array) {
     // Counter is a byte value: check if it overflowed.
     const num = counter[0];
 
